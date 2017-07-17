@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <link rel="stylesheet/less" type="text/css" href="static/css/styles.less"/>
+  <script type="text/javascript" src="static/js/less.js"></script>
+</head>
+<body>
+<div class="toolbar">
+  <button id="show" class="show-btn">预览</button>
+</div>
+<div class="drawing-box">
+
+</div>
+<div class="show-box">
+  <button class="close-btn" id="close">关闭</button>
+  <div class="show-inner"></div>
+</div>
+</body>
+<script>
+  var toolBar = document.querySelector('.toolbar');
+  var drawing = document.querySelector('.drawing-box')
+  function getAttr(ele, name) {
+    if (window.getComputedStyle) {
+      return parseInt(window.getComputedStyle(ele)[name])
+    }
+    return ele.currentStyle[name]
+  }
+
+  function CreateShape(color) {
+    var draw = document.querySelector('.drawing-box')
+    var div = document.createElement('div');
+    div.className = 'drag-mine'
+    this.startX = 0;
+    this.startY = 0;
+    this.eventX = 0;
+    this.eventY = 0;
+    this.drawWidth = getAttr(draw, 'width');
+    this.drawHeight = getAttr(draw, 'height');
+    this.ele = div;
+    this.ele.style.width = '100px';
+    this.ele.style.height = '100px';
+    this.ele.style.borderRadius = '50%';
+    this.ele.style.position = 'absolute';
+    this.ele.style.top = 0;
+    this.ele.style.left = 0;
+    this.ele.style.backgroundColor = color;
+    this.move = function (event) {
+      var e = event || window.event;
+      var moveX = e.clientX;
+      var moveY = e.clientY;
+      var left = moveX - this.eventX + this.startX;
+      var top = moveY - this.eventY + this.startY;
+      this.ele.style.left = moveX - this.eventX + this.startX + 'px';
+      this.ele.style.top = moveY - this.eventY + this.startY + 'px';
+      if (left < 1) {
+        this.ele.style.left = '0px'
+      }
+      if (left > this.drawWidth - 100) {
+        this.ele.style.left = this.drawWidth - 100 + 'px'
+      }
+      if (top < 0) {
+        this.ele.style.top = '0px'
+      }
+      if (top > this.drawHeight - 100) {
+        this.ele.style.top = this.drawHeight - 100 + 'px'
+      }
+    }
+    this.MOVE = this.move.bind(this)
+    this.up = function () {
+      document.removeEventListener('mousemove', this.MOVE);
+      document.removeEventListener('mouseup', this.UP)
+    }
+    this.UP = this.up.bind(this)
+    this.down = function (event) {
+      var e = event || window.event;
+      this.startX = getAttr(this.ele, 'left');
+      this.startY = getAttr(this.ele, 'top');
+      this.eventX = e.clientX;
+      this.eventY = e.clientY;
+      document.querySelectorAll('.drag-mine').forEach(function (item, index) {
+        item.style.zIndex = 1;
+      })
+      this.ele.style.zIndex = 100;
+      document.addEventListener('mousemove', this.MOVE)
+      document.addEventListener('mouseup', this.UP)
+    }
+    this.DOWN = this.down.bind(this)
+    this.ele.addEventListener('mousedown', this.DOWN)
+    drawing.appendChild(this.ele)
+  }
+
+  var toolList = ["红色的圆", "绿色的圆", "黄色的圆", "白色的圆"];
+  var toolStr = '';
+  toolList.forEach(function (item, index) {
+    toolStr += "<div>" + item + "</div>"
+  })
+  toolBar.innerHTML += toolStr
+  toolBar.addEventListener('click', function (event) {
+    var e = event || window.event;
+    if (e.target.localName === 'div') {
+      var text = e.target.innerText;
+      switch (text) {
+        case '红色的圆':
+          var red = new CreateShape('red');
+          break;
+        case '绿色的圆':
+          var green = new CreateShape('green');
+          break;
+        case '黄色的圆':
+          var yellow = new CreateShape('yellow');
+          break;
+        case '白色的圆':
+          var white = new CreateShape('white');
+          break;
+      }
+    }
+  })
+  var show = document.querySelector('#show');
+  var close=document.querySelector('#close');
+  var showBox = document.querySelector('.show-box');
+  var showInner = document.querySelector('.show-inner');
+  show.onclick = function () {
+    var showInnerHTML = drawing.innerHTML;
+    showInner.innerHTML += showInnerHTML;
+    showBox.style.display = 'block'
+  }
+  close.onclick=function(){
+    showInner.innerHTML=''
+    showBox.style.display = 'none'
+  }
+</script>
+</html>
